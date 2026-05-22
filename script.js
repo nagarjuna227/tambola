@@ -36,6 +36,24 @@ document.addEventListener('DOMContentLoaded', () => {
         generateTickets(); // Regenerate tickets
     }
 
+    function speakNumber(num) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Clear any ongoing speech
+            
+            let textToSpeak = `Number ${num}`;
+            if (num > 9) {
+                const digits = num.toString().split('');
+                textToSpeak = `${digits[0]} ${digits[1]}, ${num}`;
+            } else {
+                textToSpeak = `Single number, ${num}`;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.rate = 0.9; // Slightly slower for clarity
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
     // Draw a random number
     function drawNumber() {
         if (drawnNumbers.size >= totalNumbers) {
@@ -50,6 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         drawnNumbers.add(num);
         currentNumberDisplay.textContent = num;
+        
+        // Announce the number
+        speakNumber(num);
         
         // Add subtle animation and highlight on the board
         const cell = document.getElementById(`board-cell-${num}`);
