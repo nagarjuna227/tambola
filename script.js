@@ -209,6 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
             startAutoDraw();
         }
     });
+    playerCountInput.addEventListener('change', generateTickets);
+    playerCountInput.addEventListener('input', generateTickets);
 
     // Init
     initBoard();
