@@ -8,10 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const autoDrawBtn = document.getElementById('auto-draw-btn');
     const autoDrawSpeed = document.getElementById('auto-draw-speed');
     const playerCountInput = document.getElementById('player-count');
+    const leaderboardList = document.getElementById('leaderboard-list');
 
     let drawnNumbers = new Set();
     const totalNumbers = 90;
     let autoDrawInterval = null;
+    let finishedPlayers = new Set();
 
     // Initialize 1-90 board
     function initBoard() {
@@ -33,6 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.classList.remove('drawn');
         });
         stopAutoDraw();
+        finishedPlayers.clear();
+        leaderboardList.innerHTML = '<li class="empty-state">No winners yet!</li>';
         generateTickets(); // Regenerate tickets
     }
 
@@ -84,6 +88,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 tCell.classList.add('marked');
             }
         });
+        
+        checkWinners();
+    }
+
+    function checkWinners() {
+        document.querySelectorAll('[data-player]').forEach(wrapper => {
+            const playerNum = wrapper.dataset.player;
+            if (finishedPlayers.has(playerNum)) return;
+            
+            const numberCells = wrapper.querySelectorAll('.ticket-cell:not(.empty)');
+            const markedCells = wrapper.querySelectorAll('.ticket-cell.marked');
+            
+            // 15 numbers total, if all are marked it's a Full House
+            if (numberCells.length > 0 && numberCells.length === markedCells.length) {
+                finishedPlayers.add(playerNum);
+                const playerNameInput = wrapper.querySelector('.player-name-input');
+                const playerName = playerNameInput ? playerNameInput.value : `Player ${playerNum}`;
+                addToLeaderboard(playerNum, playerName);
+            }
+        });
+    }
+
+    function addToLeaderboard(playerNum, playerName) {
+        const emptyState = leaderboardList.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+        
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${playerName}</span> <span>🏆 Rank ${finishedPlayers.size}</span>`;
+        leaderboardList.appendChild(li);
+
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(`Congratulations, ${playerName} has a full house!`);
+            window.speechSynthesis.speak(utterance);
+        }
     }
 
     // Auto Draw Logic
@@ -188,7 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderTicket(ticketData, playerNum) {
         const wrapper = document.createElement('div');
-        wrapper.innerHTML = `<h3 style="margin-bottom: 0.5rem; color: var(--text-muted); font-size: 1.1rem;">Player ${playerNum}</h3>`;
+        wrapper.dataset.player = playerNum;
+        wrapper.innerHTML = `<input type="text" class="player-name-input" value="Player ${playerNum}" title="Click to edit name" />`;
         
         const ticketDiv = document.createElement('div');
         ticketDiv.classList.add('ticket');
@@ -210,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.addEventListener('click', () => {
                     if (!cell.classList.contains('empty')) {
                         cell.classList.toggle('marked');
+                        checkWinners();
                     }
                 });
                 ticketDiv.appendChild(cell);
