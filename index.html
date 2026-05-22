@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambola Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tambola / Housie</h1>
+            <p>Experience the classic game with a modern touch</p>
+        </header>
+
+        <main class="game-area">
+            <section class="board-section">
+                <div class="board-header">
+                    <h2>Game Board</h2>
+                    <div class="controls">
+                        <button id="draw-btn" class="primary-btn">Draw Number</button>
+                        <button id="reset-btn" class="secondary-btn">Reset Board</button>
+                    </div>
+                </div>
+                <div class="current-draw-container">
+                    <span class="label">Latest Draw:</span>
+                    <div id="current-number" class="current-number">--</div>
+                </div>
+                <div id="tambola-board" class="tambola-board">
+                    <!-- 1 to 90 board will be generated here -->
+                </div>
+            </section>
+
+            <section class="ticket-section">
+                <div class="ticket-header">
+                    <h2>Your Ticket</h2>
+                    <button id="generate-ticket-btn" class="primary-btn">Generate Ticket</button>
+                </div>
+                <div id="ticket-container" class="ticket-container">
+                    <!-- 3x9 ticket matrix will be generated here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
