@@ -5,9 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentNumberDisplay = document.getElementById('current-number');
     const generateTicketBtn = document.getElementById('generate-ticket-btn');
     const ticketContainer = document.getElementById('ticket-container');
+    const autoDrawBtn = document.getElementById('auto-draw-btn');
+    const autoDrawSpeed = document.getElementById('auto-draw-speed');
+    const playerCountInput = document.getElementById('player-count');
 
     let drawnNumbers = new Set();
     const totalNumbers = 90;
+    let autoDrawInterval = null;
 
     // Initialize 1-90 board
     function initBoard() {
@@ -28,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.board-cell.drawn').forEach(cell => {
             cell.classList.remove('drawn');
         });
-        ticketContainer.innerHTML = ''; // Clear generated ticket
+        stopAutoDraw();
+        generateTickets(); // Regenerate tickets
     }
 
     // Draw a random number
@@ -60,6 +65,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Auto Draw Logic
+    function toggleAutoDraw() {
+        if (autoDrawInterval) {
+            stopAutoDraw();
+        } else {
+            startAutoDraw();
+        }
+    }
+
+    function startAutoDraw() {
+        if (drawnNumbers.size >= totalNumbers) return;
+        const speed = parseInt(autoDrawSpeed.value, 10);
+        autoDrawBtn.textContent = 'Auto Draw: On';
+        autoDrawBtn.classList.replace('secondary-btn', 'primary-btn');
+        autoDrawInterval = setInterval(() => {
+            if (drawnNumbers.size >= totalNumbers) {
+                stopAutoDraw();
+            } else {
+                drawNumber();
+            }
+        }, speed);
+    }
+
+    function stopAutoDraw() {
+        if (autoDrawInterval) {
+            clearInterval(autoDrawInterval);
+            autoDrawInterval = null;
+        }
+        autoDrawBtn.textContent = 'Auto Draw: Off';
+        autoDrawBtn.classList.replace('primary-btn', 'secondary-btn');
+    }
+
     // Ticket Generation Logic
     function getColumnRange(colIndex) {
         if (colIndex === 0) return { min: 1, max: 9 };
@@ -75,7 +112,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return num;
     }
 
-    function generateTicket() {
+    function generateTickets() {
+        ticketContainer.innerHTML = '';
+        let count = parseInt(playerCountInput.value, 10);
+        if (isNaN(count) || count < 1) count = 1;
+        if (count > 20) count = 20;
+
+        for (let i = 0; i < count; i++) {
+            const ticketData = generateSingleTicketData();
+            renderTicket(ticketData, i + 1);
+        }
+    }
+
+    function generateSingleTicketData() {
         const ticket = Array(3).fill(null).map(() => Array(9).fill(null));
         const columnCounts = Array(9).fill(0);
 
@@ -113,11 +162,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        renderTicket(ticket);
+        return ticket;
     }
 
-    function renderTicket(ticketData) {
-        ticketContainer.innerHTML = '';
+    function renderTicket(ticketData, playerNum) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `<h3 style="margin-bottom: 0.5rem; color: var(--text-muted); font-size: 1.1rem;">Player ${playerNum}</h3>`;
+        
         const ticketDiv = document.createElement('div');
         ticketDiv.classList.add('ticket');
 
@@ -143,15 +194,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 ticketDiv.appendChild(cell);
             }
         }
-        ticketContainer.appendChild(ticketDiv);
+        wrapper.appendChild(ticketDiv);
+        ticketContainer.appendChild(wrapper);
     }
 
     // Event Listeners
     drawBtn.addEventListener('click', drawNumber);
     resetBtn.addEventListener('click', resetGame);
-    generateTicketBtn.addEventListener('click', generateTicket);
+    generateTicketBtn.addEventListener('click', generateTickets);
+    autoDrawBtn.addEventListener('click', toggleAutoDraw);
+    autoDrawSpeed.addEventListener('change', () => {
+        if (autoDrawInterval) {
+            stopAutoDraw();
+            startAutoDraw();
+        }
+    });
 
     // Init
     initBoard();
-    generateTicket(); // Generate one ticket by default
+    generateTickets(); // Generate tickets by default
 });
